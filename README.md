@@ -45,6 +45,19 @@ npm start
 
 Set `PORT` and `DATABASE_PATH` in the deployment environment. Use persistent storage for the SQLite database file. Do not commit `.env` or database files.
 
-## Current scope
+## Authentication API
 
-This foundation includes frontend tooling, backend startup, SQLite connection setup, environment configuration, and a health endpoint. Authentication, product APIs, database tables, and organization isolation are not implemented yet.
+- `POST /api/auth/signup` accepts `organizationName`, `email`, and `password` and creates the first user in a new organization.
+- `POST /api/auth/login` accepts `email` and `password`.
+- `GET /api/auth/me` returns the authenticated user and organization, or `401` when the session is missing or invalid.
+- `POST /api/auth/logout` revokes the current session.
+
+Passwords are hashed with bcrypt. Session tokens are random, stored only as hashes in SQLite, and sent in HTTP-only, SameSite=Lax cookies. Production cookies require HTTPS.
+
+Run the auth integration tests with:
+
+```powershell
+npm test
+```
+
+Product APIs and product management are not implemented yet.

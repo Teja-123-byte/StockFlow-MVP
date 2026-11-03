@@ -1,0 +1,73 @@
+:root{
+  --bg:#fafafa;--surface:#fff;--text:#0f172a;--muted:#64748b;--line:#e5e7eb;
+  --accent:#111827;--accent-text:#fff;--warn-bg:#fef3c7;--warn:#92400e;--danger:#b91c1c;--ok:#15803d;
+  color-scheme:light;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#0b0f17;--surface:#121826;--text:#e5e7eb;--muted:#94a3b8;--line:#1f2937;
+    --accent:#e5e7eb;--accent-text:#0b0f17;--warn-bg:#3a2a07;--warn:#fcd34d;--danger:#f87171;--ok:#4ade80;color-scheme:dark}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1{font-size:22px;margin:0;font-weight:600;letter-spacing:-.02em}
+h2{font-size:15px;margin:0;font-weight:600}
+.muted{color:var(--muted)}.num{text-align:right}
+
+.shell{max-width:1040px;margin:0 auto;padding:0 20px}
+header.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header.top .shell{display:flex;align-items:center;gap:24px;height:56px}
+.brand{font-weight:600;letter-spacing:-.02em;font-size:16px}
+nav{display:flex;gap:4px;flex:1}
+nav a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:6px;font-weight:500}
+nav a:hover,nav a.active{color:var(--text);background:var(--bg)}
+.org{font-size:13px;color:var(--muted)}
+main{padding:28px 0 60px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.tools{display:flex;gap:10px;flex:1;justify-content:flex-end}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.stat{padding:18px}.stat .n{font-size:28px;font-weight:600;letter-spacing:-.02em;margin-top:4px}
+.card .hd{padding:14px 18px;border-bottom:1px solid var(--line)}
+.settings{max-width:480px;padding:20px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:11px 18px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+th.num{text-align:right}
+tr:last-child td{border-bottom:0}
+.empty{padding:36px 18px;text-align:center;color:var(--muted)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:500;background:var(--warn-bg);color:var(--warn)}
+.badge.ok{background:transparent;color:var(--ok);padding:2px 0}
+
+button{font:inherit;font-weight:500;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:disabled{opacity:.6;cursor:default}
+button.pri{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+button.danger{color:var(--danger)}
+button.danger-fill{background:var(--danger);border-color:var(--danger);color:#fff}
+button.sm{padding:4px 9px;font-size:13px}
+button.full{width:100%}
+.acts{display:flex;gap:6px;justify-content:flex-end}
+
+label{display:block;font-size:13px;font-weight:500;margin-bottom:6px}
+input,textarea{width:100%;font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.f{margin-bottom:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.err{color:var(--danger);font-size:13px;margin:0 0 12px}
+.inline{margin:0 0 0 10px}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.search{max-width:280px}
+
+.auth{max-width:380px;margin:12vh auto 0;padding:0 20px}
+.auth .card{padding:28px}.auth h1{margin-bottom:4px}
+.auth .sub{margin:0 0 22px;color:var(--muted)}
+.auth .sw{margin-top:16px;text-align:center;color:var(--muted)}
+.auth .sw a{color:var(--text);font-weight:500}
+
+dialog{border:1px solid var(--line);border-radius:12px;padding:24px;width:min(460px,92vw);background:var(--surface);color:var(--text)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{margin-bottom:16px;font-size:17px}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+
+@media(max-width:640px){.grid2{grid-template-columns:1fr}.org{display:none}header.top .shell{gap:12px}}
