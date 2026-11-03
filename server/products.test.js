@@ -119,6 +119,42 @@ test('allows optional cost and selling prices to be omitted or blank', async (t)
   assert.equal(blank.body.sellingPrice, 0);
 });
 
+test('adjusts stock by signed whole units and records updater and note', async (t) => {
+  const { app, database } = createTestApp(t);
+  const first = await createOrganizationUser(app, 'Tea Shop', 'tea@example.com');
+  const second = await createOrganizationUser(app, 'Coffee Shop', 'coffee@example.com');
+  const product = await request(app).post('/api/products').set('Cookie', first.cookie)
+    .send({ ...productPayload, quantity: 8 }).expect(201);
+
+  const increased = await request(app).post(`/api/products/${product.body.id}/adjust`)
+    .set('Cookie', first.cookie)
+    .send({ delta: 5, note: 'Delivery received' })
+    .expect(200);
+  assert.equal(increased.body.quantity, 13);
+  assert.equal(increased.body.lastUpdatedBy, first.user.id);
+  assert.equal(increased.body.lastAdjustmentNote, 'Delivery received');
+  assert.equal(database.prepare('SELECT quantity FROM products WHERE id = ?').get(product.body.id).quantity, 13);
+
+  const decreased = await request(app).post(`/api/products/${product.body.id}/adjust`)
+    .set('Cookie', first.cookie)
+    .send({ delta: -3 })
+    .expect(200);
+  assert.equal(decreased.body.quantity, 10);
+  assert.equal(decreased.body.lastAdjustmentNote, null);
+  assert.ok(decreased.body.updatedAt >= increased.body.updatedAt);
+
+  await request(app).post(`/api/products/${product.body.id}/adjust`)
+    .set('Cookie', first.cookie).send({ delta: 0 }).expect(400);
+  await request(app).post(`/api/products/${product.body.id}/adjust`)
+    .set('Cookie', first.cookie).send({ delta: 1.5 }).expect(400);
+  await request(app).post(`/api/products/${product.body.id}/adjust`)
+    .set('Cookie', first.cookie).send({ delta: -11 }).expect(400);
+  await request(app).post(`/api/products/${product.body.id}/adjust`)
+    .set('Cookie', second.cookie).send({ delta: 1 }).expect(404);
+  await request(app).post(`/api/products/${product.body.id}/adjust`)
+    .send({ delta: 1 }).expect(401);
+});
+
 test('requires authentication and prevents cross-organization product access', async (t) => {
   const { app } = createTestApp(t);
   const first = await createOrganizationUser(app, 'Tea Shop', 'tea@example.com');

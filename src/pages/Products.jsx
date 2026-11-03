@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, money } from '../api.js';
 import ProductForm from '../components/ProductForm.jsx';
+import AdjustDialog from '../components/AdjustDialog.jsx';
 import ConfirmDelete from '../components/ConfirmDelete.jsx';
 
 export default function Products() {
@@ -75,6 +76,7 @@ export default function Products() {
                     <td className="num">{money(p.sellingPrice)}</td>
                     <td>
                       <div className="acts">
+                        <button className="sm" onClick={() => setDialog({ type: 'adjust', product: p })}>Adjust</button>
                         <button className="sm" onClick={() => setDialog({ type: 'form', product: p })}>Edit</button>
                         <button className="sm danger" onClick={() => setDialog({ type: 'delete', product: p })}>Delete</button>
                       </div>
@@ -90,6 +92,7 @@ export default function Products() {
       </div>
 
       {dialog?.type === 'form' && <ProductForm product={dialog.product} defaultThreshold={defaultThreshold} onClose={() => setDialog(null)} onSaved={done} />}
+      {dialog?.type === 'adjust' && <AdjustDialog product={dialog.product} onClose={() => setDialog(null)} onSaved={done} />}
       {dialog?.type === 'delete' && <ConfirmDelete product={dialog.product} onClose={() => setDialog(null)} onDeleted={done} />}
     </>
   );

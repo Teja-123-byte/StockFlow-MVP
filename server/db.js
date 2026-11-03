@@ -48,6 +48,8 @@ export function openDatabase(databasePath) {
       cost_price REAL NOT NULL DEFAULT 0 CHECK (cost_price >= 0),
       selling_price REAL NOT NULL DEFAULT 0 CHECK (selling_price >= 0),
       low_stock_threshold INTEGER CHECK (low_stock_threshold IS NULL OR low_stock_threshold >= 0),
+      last_updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      last_adjustment_note TEXT CHECK (last_adjustment_note IS NULL OR length(last_adjustment_note) <= 500),
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       UNIQUE (organization_id, sku)
@@ -60,6 +62,14 @@ export function openDatabase(databasePath) {
   const organizationColumns = database.prepare('PRAGMA table_info(organizations)').all();
   if (!organizationColumns.some((column) => column.name === 'default_low_stock_threshold')) {
     database.exec('ALTER TABLE organizations ADD COLUMN default_low_stock_threshold INTEGER NOT NULL DEFAULT 5 CHECK (default_low_stock_threshold >= 0)');
+  }
+
+  const productColumns = database.prepare('PRAGMA table_info(products)').all();
+  if (!productColumns.some((column) => column.name === 'last_updated_by')) {
+    database.exec('ALTER TABLE products ADD COLUMN last_updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL');
+  }
+  if (!productColumns.some((column) => column.name === 'last_adjustment_note')) {
+    database.exec('ALTER TABLE products ADD COLUMN last_adjustment_note TEXT CHECK (last_adjustment_note IS NULL OR length(last_adjustment_note) <= 500)');
   }
   return database;
 }

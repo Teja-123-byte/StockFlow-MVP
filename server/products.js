@@ -81,6 +81,8 @@ function serializeProduct(row) {
     isLowStock: row.quantity <= effectiveThreshold,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    lastUpdatedBy: row.last_updated_by,
+    lastAdjustmentNote: row.last_adjustment_note,
   };
 }
 
@@ -88,7 +90,8 @@ const SELECT_PRODUCT = `
   SELECT products.id, products.organization_id, products.name, products.sku,
     products.description, products.quantity, products.cost_price,
     products.selling_price, products.low_stock_threshold, products.created_at,
-    products.updated_at, organizations.default_low_stock_threshold
+    products.updated_at, products.last_updated_by, products.last_adjustment_note,
+    organizations.default_low_stock_threshold
   FROM products JOIN organizations ON organizations.id = products.organization_id
 `;
 
@@ -187,6 +190,53 @@ export function createProductsRouter(database, options = {}) {
       if (isSkuConflict(error)) return response.status(409).json({ error: 'A product with this SKU already exists in your organization.', field: 'sku' });
       throw error;
     }
+  });
+
+  router.post('/:id/adjust', (request, response) => {
+    const id = Number(request.params.id);
+    if (!Number.isSafeInteger(id) || id < 1) return response.status(400).json({ error: 'Product ID is invalid.' });
+
+    const body = request.body;
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return response.status(400).json({ error: 'Request body must be a JSON object.' });
+    }
+    const delta = body.delta;
+    if (!Number.isSafeInteger(delta) || delta === 0) {
+      return response.status(400).json({ error: 'Adjustment must be a non-zero whole number.', field: 'delta' });
+    }
+    const note = body.note === undefined ? '' : body.note;
+    if (typeof note !== 'string' || note.trim().length > 500) {
+      return response.status(400).json({ error: 'Note must be 500 characters or fewer.', field: 'note' });
+    }
+
+    const current = database.prepare(`
+      SELECT quantity
+      FROM products
+      WHERE id = ? AND organization_id = ?
+    `).get(id, request.user.organizationId);
+    if (!current) return response.status(404).json({ error: 'Product not found.' });
+
+    const quantity = current.quantity + delta;
+    if (!Number.isSafeInteger(quantity) || quantity < 0) {
+      return response.status(400).json({ error: 'Adjustment would result in an invalid stock quantity.', field: 'delta' });
+    }
+
+    database.prepare(`
+      UPDATE products
+      SET quantity = ?, updated_at = ?, last_updated_by = ?, last_adjustment_note = ?
+      WHERE id = ? AND organization_id = ?
+    `).run(
+      quantity,
+      Date.now(),
+      request.user.id,
+      note.trim() || null,
+      id,
+      request.user.organizationId,
+    );
+    const row = database.prepare(`${SELECT_PRODUCT}
+      WHERE products.id = ? AND products.organization_id = ?`)
+      .get(id, request.user.organizationId);
+    return response.json(serializeProduct(row));
   });
 
   router.delete('/:id', (request, response) => {

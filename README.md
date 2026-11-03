@@ -79,10 +79,13 @@ npm start        # Start Express and serve dist/ when the build exists
 - `POST /api/auth/login` with `email` and `password`
 - `GET /api/auth/me` and `POST /api/auth/logout`
 - `GET /api/products?search=`; `POST /api/products`; `PUT /api/products/:id`; `DELETE /api/products/:id`
+- `POST /api/products/:id/adjust` with a signed, non-zero integer `delta` and optional `note` (maximum 500 characters)
 - `GET /api/dashboard`
 - `GET /api/settings` and `PUT /api/settings` with `{ "defaultLowStockThreshold": 5 }`
 
 Protected endpoints return `401` without a valid session. Cross-organization product IDs return `404`. Invalid input returns a JSON error response with an appropriate `4xx` status.
+
+Stock adjustments update quantity and `updated_at`, and record `last_updated_by` plus the optional last adjustment note on the product. They do not create a movement history in this MVP. Adjustments that would take stock below zero are rejected.
 
 ## Deployment
 
