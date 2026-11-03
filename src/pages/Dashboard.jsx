@@ -4,18 +4,33 @@ import { api } from '../api.js';
 export default function Dashboard() {
   const [d, setD] = useState(null);
   const [error, setError] = useState('');
-  useEffect(() => { api.dashboard().then(setD).catch((e) => setError(e.message)); }, []);
+  const [loading, setLoading] = useState(true);
 
-  if (error) return <div className="err">{error}</div>;
+  async function load() {
+    setLoading(true);
+    setError('');
+    try {
+      setD(await api.dashboard());
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  if (loading) return <div className="empty" role="status">Loading inventory dashboard...</div>;
+  if (error) return <div className="err" role="alert">{error} <button className="sm" onClick={load}>Retry</button></div>;
   if (!d) return null;
 
   return (
     <>
       <div className="bar"><h1>Dashboard</h1></div>
       <div className="cards">
-        <div className="card stat"><div className="muted">Total products</div><div className="n">{d.totalProducts}</div></div>
+        <div className="card stat"><div className="muted">Total products</div><div className="n">{d.totalProducts.toLocaleString()}</div></div>
         <div className="card stat"><div className="muted">Units on hand</div><div className="n">{d.totalUnits.toLocaleString()}</div></div>
-        <div className="card stat"><div className="muted">Low stock items</div><div className="n">{d.lowStockCount}</div></div>
+        <div className="card stat"><div className="muted">Low stock items</div><div className="n">{d.lowStockCount.toLocaleString()}</div></div>
       </div>
       <div className="card">
         <div className="hd"><h2>Low stock items</h2></div>

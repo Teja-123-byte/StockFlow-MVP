@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { createAuthMiddleware } from './auth.js';
 
-const DEFAULT_LOW_STOCK_THRESHOLD = 5;
 const MAX_SAFE_NUMBER = Number.MAX_SAFE_INTEGER;
 
 function parseProduct(body) {
@@ -67,7 +66,7 @@ function parseProduct(body) {
 }
 
 function serializeProduct(row) {
-  const effectiveThreshold = row.low_stock_threshold ?? DEFAULT_LOW_STOCK_THRESHOLD;
+  const effectiveThreshold = row.low_stock_threshold ?? row.default_low_stock_threshold ?? 5;
   return {
     id: row.id,
     organizationId: row.organization_id,
@@ -86,9 +85,11 @@ function serializeProduct(row) {
 }
 
 const SELECT_PRODUCT = `
-  SELECT id, organization_id, name, sku, description, quantity,
-    cost_price, selling_price, low_stock_threshold, created_at, updated_at
-  FROM products
+  SELECT products.id, products.organization_id, products.name, products.sku,
+    products.description, products.quantity, products.cost_price,
+    products.selling_price, products.low_stock_threshold, products.created_at,
+    products.updated_at, organizations.default_low_stock_threshold
+  FROM products JOIN organizations ON organizations.id = products.organization_id
 `;
 
 function isSkuConflict(error) {
@@ -107,12 +108,12 @@ export function createProductsRouter(database, options = {}) {
 
     const rows = search
       ? database.prepare(`${SELECT_PRODUCT}
-          WHERE organization_id = ? AND (name LIKE ? ESCAPE '\\' COLLATE NOCASE OR sku LIKE ? ESCAPE '\\' COLLATE NOCASE)
-          ORDER BY name COLLATE NOCASE, id
+          WHERE products.organization_id = ? AND (products.name LIKE ? ESCAPE '\\' COLLATE NOCASE OR products.sku LIKE ? ESCAPE '\\' COLLATE NOCASE)
+          ORDER BY products.name COLLATE NOCASE, products.id
         `).all(request.user.organizationId, `%${search.replace(/[\\%_]/g, '\\$&')}%`, `%${search.replace(/[\\%_]/g, '\\$&')}%`)
       : database.prepare(`${SELECT_PRODUCT}
-          WHERE organization_id = ?
-          ORDER BY name COLLATE NOCASE, id
+          WHERE products.organization_id = ?
+          ORDER BY products.name COLLATE NOCASE, products.id
         `).all(request.user.organizationId);
     return response.json(rows.map(serializeProduct));
   });
@@ -141,7 +142,8 @@ export function createProductsRouter(database, options = {}) {
         now,
         now,
       );
-      const row = database.prepare(`${SELECT_PRODUCT} WHERE id = ? AND organization_id = ?`)
+      const row = database.prepare(`${SELECT_PRODUCT}
+        WHERE products.id = ? AND products.organization_id = ?`)
         .get(result.lastInsertRowid, request.user.organizationId);
       return response.status(201).json(serializeProduct(row));
     } catch (error) {
@@ -177,7 +179,8 @@ export function createProductsRouter(database, options = {}) {
         request.user.organizationId,
       );
       if (!result.changes) return response.status(404).json({ error: 'Product not found.' });
-      const row = database.prepare(`${SELECT_PRODUCT} WHERE id = ? AND organization_id = ?`)
+      const row = database.prepare(`${SELECT_PRODUCT}
+        WHERE products.id = ? AND products.organization_id = ?`)
         .get(id, request.user.organizationId);
       return response.json(serializeProduct(row));
     } catch (error) {

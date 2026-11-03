@@ -63,6 +63,10 @@ Product routes require the session cookie and always scope reads and writes to t
 
 SKU values are unique within each organization. Client-supplied organization IDs are ignored. Product integration tests cover CRUD, search, validation, and cross-organization access attempts.
 
+The authenticated inventory dashboard is available at `GET /api/dashboard`. It reports organization-scoped product and unit totals plus low-stock products. Low stock uses `quantity <= effectiveThreshold`; a product's custom threshold takes precedence over the organization's default.
+
+Organization default thresholds are read and updated with `GET /api/settings` and `PUT /api/settings` using `{ "defaultLowStockThreshold": 5 }`. The default for new and existing organizations is 5.
+
 Run the integration tests with:
 
 ```powershell

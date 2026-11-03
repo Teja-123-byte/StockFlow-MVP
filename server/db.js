@@ -13,6 +13,7 @@ export function openDatabase(databasePath) {
     CREATE TABLE IF NOT EXISTS organizations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL CHECK (length(name) BETWEEN 2 AND 100),
+      default_low_stock_threshold INTEGER NOT NULL DEFAULT 5 CHECK (default_low_stock_threshold >= 0),
       created_at INTEGER NOT NULL
     );
 
@@ -52,5 +53,10 @@ export function openDatabase(databasePath) {
     CREATE INDEX IF NOT EXISTS products_organization_name_idx ON products(organization_id, name COLLATE NOCASE);
     CREATE INDEX IF NOT EXISTS products_organization_sku_idx ON products(organization_id, sku COLLATE NOCASE);
   `);
+
+  const organizationColumns = database.prepare('PRAGMA table_info(organizations)').all();
+  if (!organizationColumns.some((column) => column.name === 'default_low_stock_threshold')) {
+    database.exec('ALTER TABLE organizations ADD COLUMN default_low_stock_threshold INTEGER NOT NULL DEFAULT 5 CHECK (default_low_stock_threshold >= 0)');
+  }
   return database;
 }
