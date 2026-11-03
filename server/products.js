@@ -29,13 +29,13 @@ function parseProduct(body) {
     return { error: 'Quantity must be a non-negative whole number.', field: 'quantity' };
   }
 
-  const costPrice = parseNumericField(body.costPrice, 0);
+  const costPrice = parseOptionalPrice(body.costPrice);
   if (costPrice.error) return { error: 'Cost price must be a non-negative number.', field: 'costPrice' };
   if (!Number.isFinite(costPrice) || costPrice < 0 || costPrice > MAX_SAFE_NUMBER) {
     return { error: 'Cost price must be a non-negative number.', field: 'costPrice' };
   }
 
-  const sellingPrice = parseNumericField(body.sellingPrice, 0);
+  const sellingPrice = parseOptionalPrice(body.sellingPrice);
   if (sellingPrice.error) return { error: 'Selling price must be a non-negative number.', field: 'sellingPrice' };
   if (!Number.isFinite(sellingPrice) || sellingPrice < 0 || sellingPrice > MAX_SAFE_NUMBER) {
     return { error: 'Selling price must be a non-negative number.', field: 'sellingPrice' };
@@ -207,4 +207,9 @@ function parseNumericField(value, defaultValue) {
   if (typeof value === 'string' && !value.trim()) return { error: true };
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : { error: true };
+}
+
+function parseOptionalPrice(value) {
+  if (value === undefined || value === null || value === '') return 0;
+  return parseNumericField(value);
 }

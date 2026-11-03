@@ -92,13 +92,31 @@ test('validates product fields and enforces organization-scoped unique SKUs', as
     .send({ ...productPayload, quantity: true }).expect(400)
     .expect(({ body }) => assert.equal(body.field, 'quantity'));
   await request(app).post('/api/products').set('Cookie', first.cookie)
-    .send({ ...productPayload, sellingPrice: '' }).expect(400)
+    .send({ ...productPayload, sellingPrice: 'not-a-price' }).expect(400)
     .expect(({ body }) => assert.equal(body.field, 'sellingPrice'));
 
   await request(app).post('/api/products').set('Cookie', first.cookie).send(productPayload).expect(201);
   await request(app).post('/api/products').set('Cookie', first.cookie)
     .send({ ...productPayload, sku: 'tea-001' }).expect(409);
   await request(app).post('/api/products').set('Cookie', second.cookie).send(productPayload).expect(201);
+});
+
+test('allows optional cost and selling prices to be omitted or blank', async (t) => {
+  const { app } = createTestApp(t);
+  const { cookie } = await createOrganizationUser(app, 'Tea Shop', 'tea@example.com');
+
+  const omitted = await request(app).post('/api/products').set('Cookie', cookie)
+    .send({ name: 'No Prices', sku: 'NO-PRICE', quantity: 1 }).expect(201);
+  assert.equal(omitted.body.costPrice, 0);
+  assert.equal(omitted.body.sellingPrice, 0);
+  assert.ok(omitted.body.createdAt);
+  assert.ok(omitted.body.updatedAt);
+
+  const blank = await request(app).post('/api/products').set('Cookie', cookie)
+    .send({ name: 'Blank Prices', sku: 'BLANK-PRICE', quantity: 1, costPrice: '', sellingPrice: '' })
+    .expect(201);
+  assert.equal(blank.body.costPrice, 0);
+  assert.equal(blank.body.sellingPrice, 0);
 });
 
 test('requires authentication and prevents cross-organization product access', async (t) => {

@@ -48,8 +48,8 @@ export default function ProductForm({ product, defaultThreshold, onClose, onSave
         <div className="grid2">
           <div className="f"><label htmlFor="product-quantity">Quantity on hand</label><input id="product-quantity" type="number" min="0" step="1" value={f.quantity} onChange={set('quantity')} required /></div>
           <div className="f"><label htmlFor="product-threshold">Low-stock threshold</label><input id="product-threshold" type="number" min="0" step="1" value={f.lowStockThreshold} onChange={set('lowStockThreshold')} placeholder={`Default: ${defaultThreshold}`} /></div>
-          <div className="f"><label htmlFor="product-cost">Cost price</label><input id="product-cost" type="number" min="0" step="0.01" value={f.costPrice} onChange={set('costPrice')} required /></div>
-          <div className="f"><label htmlFor="product-selling">Selling price</label><input id="product-selling" type="number" min="0" step="0.01" value={f.sellingPrice} onChange={set('sellingPrice')} required /></div>
+          <div className="f"><label htmlFor="product-cost">Cost price <span className="muted">(optional)</span></label><input id="product-cost" type="number" min="0" step="0.01" value={f.costPrice} onChange={set('costPrice')} placeholder="0.00" /></div>
+          <div className="f"><label htmlFor="product-selling">Selling price <span className="muted">(optional)</span></label><input id="product-selling" type="number" min="0" step="0.01" value={f.sellingPrice} onChange={set('sellingPrice')} placeholder="0.00" /></div>
         </div>
         <div className="foot">
           <button type="button" onClick={onClose} disabled={busy}>Cancel</button>
