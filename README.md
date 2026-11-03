@@ -142,3 +142,7 @@ Run a single web-service instance for this SQLite setup. Do not scale to multipl
 ### Deploy the frontend on Netlify with the Render API
 
 The root `netlify.toml` proxies same-origin `/api/*` requests to `https://stockflow-mvp-1-e3pj.onrender.com`, and sends frontend routes to `index.html` for React Router. In Netlify, set the base directory to the repository root (leave it blank), the build command to `npm ci --include=dev && npm run build`, and the publish directory to `frontend/dist`. Deploy the Render backend first and verify `/api/health`; if its public URL changes, update the API rewrite target in `netlify.toml` before redeploying the frontend.
+
+### Deploy the frontend on Vercel with the Render API
+
+The root `vercel.json` configures the Vite build, publishes `frontend/dist`, rewrites `/api/*` to `https://stockflow-mvp-1-e3pj.onrender.com/api/*`, and sends other paths to the SPA entry point. In Vercel, import the repository with **Root Directory** set to `.` (the repository root). The config installs with `npm ci --include=dev` because Vite is a root development dependency. Deploy the Render backend first and verify `/api/health`; update the rewrite destination in `vercel.json` if the Render URL changes. Vercel hosts only the frontend here; the Express API and SQLite database remain on Render.
