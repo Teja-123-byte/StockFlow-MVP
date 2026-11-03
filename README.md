@@ -107,3 +107,34 @@ Deploy to a Node.js host that supports Node 20+ and persistent local storage:
 6. Confirm `GET /api/health` reports both API and database status as `ok`.
 
 The Express process serves `frontend/dist/` when present. This repository does not include a platform-specific manifest, container image, managed database, automated backup service, or horizontal-scaling configuration. SQLite storage must persist across deploys; use a server database instead if the target platform has ephemeral disks or requires multiple application instances.
+
+### Deploy on Render with SQLite
+
+Create a Render **Web Service** from this repository. Set **Root Directory** to `.` (the repository root); do not set it to `frontend/`, because the single `package.json` and `package-lock.json` are at the root and there is no separate frontend package manifest. Vite and its React plugin are root `devDependencies`, so the build install must include development dependencies even when `NODE_ENV=production` is configured for the service.
+
+Attach a persistent disk to the web service with this mount path:
+
+```text
+/var/data
+```
+
+Use these Render commands:
+
+```text
+Build Command: npm ci --include=dev && npm run build
+Start Command: npm start
+```
+
+Add these environment variables in the Render service settings:
+
+| Variable | Value |
+| --- | --- |
+| `NODE_ENV` | `production` |
+| `DATABASE_PATH` | `/var/data/stockflow.sqlite` |
+| `PORT` | Leave unset; Render provides it. |
+
+The local `.env.example` value `./data/stockflow.sqlite` is relative to the project working directory and is not suitable for persistence on Render. The absolute `/var/data/stockflow.sqlite` path places the database on the attached disk. SQLite also creates `-wal` and `-shm` sidecar files beside the database, so they are on the same persistent disk.
+
+On each start, the backend opens that database, enables WAL and foreign keys, creates any missing tables/indexes, and applies the idempotent column migrations before accepting requests. Redeploys preserve data as long as the disk remains attached at `/var/data` and `DATABASE_PATH` is unchanged. Check `https://<your-service>.onrender.com/api/health` after the first deploy; it should return `{"status":"ok","database":"ok"}`.
+
+Run a single web-service instance for this SQLite setup. Do not scale to multiple instances or use an ephemeral disk; the database file is local to the attached disk and is not a shared database service. Keep the disk attached when deploying new builds, and take backups before destructive database or disk changes.
