@@ -7,6 +7,7 @@ StockFlow is a small, multi-tenant inventory management MVP. Organizations can m
 - Email/password signup and login with bcrypt password hashing.
 - Random, expiring server-side sessions sent as HTTP-only, SameSite=Lax cookies.
 - Organization-scoped product creation, listing, search, editing, and deletion.
+- Direct quantity edits and signed stock adjustments with optional notes.
 - One user per organization in this MVP; signup creates a new organization and its owner atomically.
 - Case-insensitive SKU uniqueness within each organization.
 - Inventory dashboard totals and low-stock list using `quantity <= effective threshold`.
@@ -60,7 +61,7 @@ There is no JWT or database password secret: session tokens are generated random
 
 ## Database Setup and Migrations
 
-The server creates the database directory and tables on startup. It enables SQLite foreign keys and WAL mode. Existing databases are checked for the organization default-threshold column and upgraded in place when it is missing; the migration is idempotent and existing organizations receive a default of `5`.
+The server creates the database directory and tables on startup. It enables SQLite foreign keys and WAL mode. Startup migrations add the organization default-threshold column and product adjustment metadata columns when missing; these migrations are idempotent, and existing organizations receive a threshold default of `5`. A unique user-per-organization index enforces the MVP membership rule.
 
 Use a persistent, writable disk for `DATABASE_PATH`. SQLite is intended for a single StockFlow server instance in this MVP. Do not use an ephemeral filesystem or share the SQLite file across horizontally scaled instances. Back up the database using a SQLite-aware backup process.
 
