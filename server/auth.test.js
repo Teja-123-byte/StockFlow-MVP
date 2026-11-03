@@ -125,3 +125,16 @@ test('protected route requires a valid session and logout revokes it', async (t)
     .expect(401)
     .expect(({ body }) => assert.equal(body.error, 'Session is invalid or expired.'));
 });
+
+test('production-configured session cookies include Secure', async (t) => {
+  const database = openDatabase(':memory:');
+  t.after(() => database.close());
+  const app = createApp(database, { secureCookies: true, passwordRounds: 4 });
+
+  const response = await request(app)
+    .post('/api/auth/signup')
+    .send({ organizationName: 'Secure Store', email: 'secure@example.com', password: 'secure-pass-123' })
+    .expect(201);
+
+  assert.match(response.headers['set-cookie'][0], /; Secure/i);
+});

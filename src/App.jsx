@@ -7,8 +7,17 @@ import Products from './pages/Products.jsx';
 import Settings from './pages/Settings.jsx';
 
 export default function App() {
-  const { user } = useAuth();
-  if (user === undefined) return null; // checking session
+  const { user, authError, refreshSession } = useAuth();
+  if (user === undefined && authError) {
+    return (
+      <div className="app-state" role="alert">
+        <h1>StockFlow is unavailable</h1>
+        <p>{authError}</p>
+        <button className="pri" onClick={refreshSession}>Try again</button>
+      </div>
+    );
+  }
+  if (user === undefined) return <div className="app-state" role="status">Loading StockFlow...</div>;
 
   if (!user)
     return (

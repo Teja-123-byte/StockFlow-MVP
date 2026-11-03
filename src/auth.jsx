@@ -6,15 +6,33 @@ export const useAuth = () => useContext(Ctx);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined); // undefined = still loading, null = signed out
+  const [authError, setAuthError] = useState('');
+
+  async function refreshSession() {
+    try {
+      setUser(await api.me());
+      setAuthError('');
+    } catch (error) {
+      if (error.status === 401) {
+        setUser(null);
+        setAuthError('');
+      } else {
+        setUser(undefined);
+        setAuthError(error.message || 'Unable to connect to StockFlow.');
+      }
+    }
+  }
 
   useEffect(() => {
-    api.me().then(setUser).catch(() => setUser(null));
+    refreshSession();
   }, []);
 
   const value = {
     user,
-    login: async (b) => setUser(await api.login(b)),
-    signup: async (b) => setUser(await api.signup(b)),
+    authError,
+    refreshSession,
+    login: async (b) => { const signedInUser = await api.login(b); setAuthError(''); setUser(signedInUser); },
+    signup: async (b) => { const signedUpUser = await api.signup(b); setAuthError(''); setUser(signedUpUser); },
     logout: async () => { await api.logout(); setUser(null); },
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

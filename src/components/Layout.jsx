@@ -26,13 +26,13 @@ export default function Layout() {
           <span>StockFlow</span>
         </NavLink>
         <div className="workspace">
-          <span className="workspace-label">WORKSPACE</span>
+          <span className="workspace-label">Workspace</span>
           <strong title={user.orgName}>{user.orgName}</strong>
         </div>
         <nav className="primary-nav" aria-label="Main navigation">
-          <NavLink className="nav-link" to="/dashboard"><span className="nav-mark" aria-hidden="true">01</span>Dashboard</NavLink>
-          <NavLink className="nav-link" to="/products"><span className="nav-mark" aria-hidden="true">02</span>Products</NavLink>
-          <NavLink className="nav-link" to="/settings"><span className="nav-mark" aria-hidden="true">03</span>Settings</NavLink>
+          <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
+          <NavLink className="nav-link" to="/products">Products</NavLink>
+          <NavLink className="nav-link" to="/settings">Settings</NavLink>
         </nav>
         <div className="sidebar-footer">
           {logoutError && <div className="logout-error" role="alert">{logoutError}</div>}
