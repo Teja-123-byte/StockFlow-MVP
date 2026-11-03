@@ -19,11 +19,16 @@ export default function ProductForm({ product, defaultThreshold, onClose, onSave
 
   async function submit(e) {
     e.preventDefault();
+    if (!f.name.trim() || !f.sku.trim()) {
+      setError('Name and SKU are required.');
+      return;
+    }
     setBusy(true);
     setError('');
     try {
-      if (editing) await api.updateProduct(product.id, f);
-      else await api.createProduct(f);
+      const payload = { ...f, name: f.name.trim(), sku: f.sku.trim(), description: f.description.trim() };
+      if (editing) await api.updateProduct(product.id, payload);
+      else await api.createProduct(payload);
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -48,7 +53,7 @@ export default function ProductForm({ product, defaultThreshold, onClose, onSave
         </div>
         <div className="foot">
           <button type="button" onClick={onClose} disabled={busy}>Cancel</button>
-          <button className="pri" disabled={busy}>{editing ? 'Save changes' : 'Create product'}</button>
+          <button className="pri" disabled={busy}>{busy ? 'Saving...' : editing ? 'Save changes' : 'Create product'}</button>
         </div>
       </form>
     </Modal>

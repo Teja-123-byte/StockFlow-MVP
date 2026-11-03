@@ -17,8 +17,8 @@ export default function ConfirmDelete({ product, onClose, onDeleted }) {
     }
   }
   return (
-    <Modal title="Delete product?" onClose={onClose}>
-      {error && <div className="err">{error}</div>}
+    <Modal title="Delete product?" onClose={onClose} closeDisabled={busy}>
+      {error && <div className="err" role="alert">{error}</div>}
       <p className="muted">“{product.name}” will be permanently removed. This can’t be undone.</p>
       <div className="foot">
         <button onClick={onClose} disabled={busy}>Cancel</button>

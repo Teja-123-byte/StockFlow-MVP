@@ -6,7 +6,8 @@ import ConfirmDelete from '../components/ConfirmDelete.jsx';
 export default function Products() {
   const [rows, setRows] = useState(null);
   const [search, setSearch] = useState('');
-  const [defaultThreshold] = useState(5);
+  const [defaultThreshold, setDefaultThreshold] = useState(null);
+  const [settingsError, setSettingsError] = useState('');
   const [dialog, setDialog] = useState(null); // { type: 'form' | 'adjust' | 'delete', product? }
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,14 @@ export default function Products() {
     return () => clearTimeout(t);
   }, [load]);
 
+  useEffect(() => {
+    let active = true;
+    api.settings()
+      .then((settings) => { if (active) setDefaultThreshold(settings.defaultLowStockThreshold); })
+      .catch((e) => { if (active) setSettingsError(e.message); });
+    return () => { active = false; };
+  }, []);
+
   const done = () => { setDialog(null); load(search); };
 
   return (
@@ -43,6 +52,7 @@ export default function Products() {
           <button className="pri" onClick={() => setDialog({ type: 'form' })}>Add product</button>
         </div>
       </div>
+      {settingsError && <div className="notice" role="status">Could not load the organization default threshold. Products will still use the saved setting. <button className="sm" onClick={() => api.settings().then((settings) => { setDefaultThreshold(settings.defaultLowStockThreshold); setSettingsError(''); }).catch((e) => setSettingsError(e.message))}>Retry</button></div>}
       {error && <div className="err" role="alert">{error} <button className="sm" onClick={() => load(search)}>Retry</button></div>}
       <div className="card">
         {loading ? (
