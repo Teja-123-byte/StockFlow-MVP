@@ -7,12 +7,13 @@ StockFlow is a small, multi-tenant inventory management MVP. Organizations can m
 - Email/password signup and login with bcrypt password hashing.
 - Random, expiring server-side sessions sent as HTTP-only, SameSite=Lax cookies.
 - Organization-scoped product creation, listing, search, editing, and deletion.
+- One user per organization in this MVP; signup creates a new organization and its owner atomically.
 - Case-insensitive SKU uniqueness within each organization.
 - Inventory dashboard totals and low-stock list using `quantity <= effective threshold`.
 - Organization default low-stock settings, used when a product has no custom threshold.
 - Responsive Dashboard, Products, and Settings views with loading, empty, validation, and error states.
 
-All product, dashboard, and settings queries derive organization scope from the authenticated session. A client-supplied organization ID is not used to select tenant data.
+All product, dashboard, and settings queries derive organization scope from the authenticated session. A client-supplied organization ID is not used to select tenant data. The database enforces one user per organization; invitations and shared organizations are outside the current MVP scope.
 
 ## Tech Stack
 

@@ -25,6 +25,9 @@ export function openDatabase(databasePath) {
       created_at INTEGER NOT NULL
     );
 
+    CREATE UNIQUE INDEX IF NOT EXISTS users_one_per_organization_idx
+      ON users(organization_id);
+
     CREATE TABLE IF NOT EXISTS auth_sessions (
       token_hash TEXT PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

@@ -39,3 +39,22 @@ test('adds the organization default threshold when opening a legacy database', (
     5,
   );
 });
+
+test('allows only one user per organization', (t) => {
+  const database = openDatabase(':memory:');
+  t.after(() => database.close());
+
+  const organization = database.prepare(
+    'INSERT INTO organizations (name, created_at) VALUES (?, ?)'
+  ).run('Single User Store', Date.now());
+  const addUser = database.prepare(`
+    INSERT INTO users (organization_id, email, password_hash, created_at)
+    VALUES (?, ?, ?, ?)
+  `);
+
+  addUser.run(organization.lastInsertRowid, 'owner@example.test', 'hash', Date.now());
+  assert.throws(
+    () => addUser.run(organization.lastInsertRowid, 'second@example.test', 'hash', Date.now()),
+    { code: 'SQLITE_CONSTRAINT_UNIQUE' },
+  );
+});
