@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Modal from './Modal.jsx';
 import { api } from '../api.js';
 
-export default function ProductForm({ product, defaultThreshold, onClose, onSaved }) {
+export default function ProductForm({ product, organizationId, defaultThreshold, onClose, onSaved }) {
   const editing = !!product;
   const [f, setF] = useState({
     name: product?.name ?? '',
@@ -40,6 +40,7 @@ export default function ProductForm({ product, defaultThreshold, onClose, onSave
     <Modal title={editing ? 'Edit product' : 'Add product'} onClose={onClose}>
       <form onSubmit={submit}>
         {error && <div className="err">{error}</div>}
+        <div className="f"><label htmlFor="product-organization">Organization ID</label><input id="product-organization" value={product?.organizationId ?? organizationId} readOnly aria-readonly="true" /></div>
         <div className="grid2">
           <div className="f"><label htmlFor="product-name">Name *</label><input id="product-name" value={f.name} onChange={set('name')} maxLength="120" required autoFocus /></div>
           <div className="f"><label htmlFor="product-sku">SKU *</label><input id="product-sku" value={f.sku} onChange={set('sku')} maxLength="64" required /></div>

@@ -2,6 +2,8 @@
 
 StockFlow is a small, multi-tenant inventory management MVP. Organizations can manage a product catalog, monitor stock levels, and configure a default low-stock threshold. The React client and Express API are served from one origin in production; SQLite stores application data.
 
+Live frontend: [https://stockflow-mvp-ruby.vercel.app](https://stockflow-mvp-ruby.vercel.app)
+
 ## Project Structure
 
 - `frontend/` — React pages/components, Vite entry point, and frontend build output.

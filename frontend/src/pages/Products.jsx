@@ -3,8 +3,10 @@ import { api, money } from '../api.js';
 import ProductForm from '../components/ProductForm.jsx';
 import AdjustDialog from '../components/AdjustDialog.jsx';
 import ConfirmDelete from '../components/ConfirmDelete.jsx';
+import { useAuth } from '../auth.jsx';
 
 export default function Products() {
+  const { user } = useAuth();
   const [rows, setRows] = useState(null);
   const [search, setSearch] = useState('');
   const [defaultThreshold, setDefaultThreshold] = useState(null);
@@ -64,13 +66,14 @@ export default function Products() {
           <div className="scroll">
             <table>
               <thead>
-                <tr><th>Name</th><th>SKU</th><th className="num">Quantity</th><th>Stock</th><th className="num">Price</th><th></th></tr>
+                <tr><th>Name</th><th>SKU</th><th>Organization ID</th><th className="num">Quantity</th><th>Stock</th><th className="num">Price</th><th></th></tr>
               </thead>
               <tbody>
                 {rows.map((p) => (
                   <tr key={p.id}>
                     <td>{p.name}</td>
                     <td className="muted">{p.sku}</td>
+                    <td className="muted">{p.organizationId}</td>
                     <td className="num">{p.quantity}</td>
                     <td>{p.isLowStock ? <span className="badge">Low stock</span> : <span className="badge ok">In stock</span>}</td>
                     <td className="num">{money(p.sellingPrice)}</td>
@@ -91,7 +94,7 @@ export default function Products() {
         )}
       </div>
 
-      {dialog?.type === 'form' && <ProductForm product={dialog.product} defaultThreshold={defaultThreshold} onClose={() => setDialog(null)} onSaved={done} />}
+      {dialog?.type === 'form' && <ProductForm product={dialog.product} organizationId={user.organizationId} defaultThreshold={defaultThreshold} onClose={() => setDialog(null)} onSaved={done} />}
       {dialog?.type === 'adjust' && <AdjustDialog product={dialog.product} onClose={() => setDialog(null)} onSaved={done} />}
       {dialog?.type === 'delete' && <ConfirmDelete product={dialog.product} onClose={() => setDialog(null)} onDeleted={done} />}
     </>
