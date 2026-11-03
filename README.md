@@ -2,6 +2,13 @@
 
 StockFlow is a small, multi-tenant inventory management MVP. Organizations can manage a product catalog, monitor stock levels, and configure a default low-stock threshold. The React client and Express API are served from one origin in production; SQLite stores application data.
 
+## Project Structure
+
+- `frontend/` — React pages/components, Vite entry point, and frontend build output.
+- `backend/server/` — Express app, API routes, SQLite setup, and integration tests.
+- Root `package.json` — shared dependency installation and commands for both apps.
+- `data/` — local SQLite database created at runtime.
+
 ## Features
 
 - Email/password signup and login with bcrypt password hashing.
@@ -92,11 +99,11 @@ Stock adjustments update quantity and `updated_at`, and record `last_updated_by`
 
 Deploy to a Node.js host that supports Node 20+ and persistent local storage:
 
-1. Install dependencies with `npm ci`.
-2. Build the client with `npm run build`.
+1. Install dependencies from the repository root with `npm ci`.
+2. Build the client from the repository root with `npm run build`; output is written to `frontend/dist/`.
 3. Configure `NODE_ENV=production`, the host-provided `PORT`, and an absolute `DATABASE_PATH` on a persistent writable volume.
-4. Start the server with `npm start`.
+4. Start the backend from the repository root with `npm start`.
 5. Terminate TLS at the host or a trusted reverse proxy and serve the app over HTTPS.
 6. Confirm `GET /api/health` reports both API and database status as `ok`.
 
-The Express process serves the `dist/` build when present. This repository does not include a platform-specific manifest, container image, managed database, automated backup service, or horizontal-scaling configuration. SQLite storage must persist across deploys; use a server database instead if the target platform has ephemeral disks or requires multiple application instances.
+The Express process serves `frontend/dist/` when present. This repository does not include a platform-specific manifest, container image, managed database, automated backup service, or horizontal-scaling configuration. SQLite storage must persist across deploys; use a server database instead if the target platform has ephemeral disks or requires multiple application instances.

@@ -8,7 +8,7 @@ import { createDashboardRouter } from './dashboard.js';
 import { createSettingsRouter } from './settings.js';
 
 const serverDirectory = dirname(fileURLToPath(import.meta.url));
-const projectDirectory = resolve(serverDirectory, '..');
+const projectDirectory = resolve(serverDirectory, '..', '..');
 
 export function createApp(database, options = {}) {
   const app = express();
@@ -33,7 +33,7 @@ export function createApp(database, options = {}) {
     response.status(404).json({ error: 'API route not found' });
   });
 
-  const clientBuildDirectory = resolve(projectDirectory, 'dist');
+  const clientBuildDirectory = resolve(projectDirectory, 'frontend', 'dist');
   if (existsSync(clientBuildDirectory)) {
     app.use(express.static(clientBuildDirectory));
     app.use((request, response, next) => {

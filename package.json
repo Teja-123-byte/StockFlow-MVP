@@ -8,10 +8,10 @@
   },
   "scripts": {
     "dev": "concurrently -k \"npm:dev:server\" \"npm:dev:client\"",
-    "dev:client": "vite",
-    "dev:server": "node --watch server/index.js",
-    "build": "vite build",
-    "start": "node server/index.js",
+    "dev:client": "vite frontend --config frontend/vite.config.js",
+    "dev:server": "node --watch backend/server/index.js",
+    "build": "vite build frontend --config frontend/vite.config.js",
+    "start": "node backend/server/index.js",
     "test": "node --test"
   },
   "dependencies": {
