@@ -104,12 +104,9 @@ function validateCredentials(body, { signup }) {
   return { value: { email, password: body.password, organizationName } };
 }
 
-export function createAuthRouter(database, options = {}) {
-  const router = Router();
+export function createAuthMiddleware(database, options = {}) {
   const secureCookies = options.secureCookies ?? process.env.NODE_ENV === 'production';
-  const passwordRounds = options.passwordRounds ?? 12;
-
-  function requireAuth(request, response, next) {
+  return function requireAuth(request, response, next) {
     const token = readCookie(request, COOKIE_NAME);
     if (!token || !/^[a-f0-9]{64}$/.test(token)) {
       clearSessionCookie(response, secureCookies);
@@ -132,7 +129,14 @@ export function createAuthRouter(database, options = {}) {
 
     request.user = row;
     return next();
-  }
+  };
+}
+
+export function createAuthRouter(database, options = {}) {
+  const router = Router();
+  const secureCookies = options.secureCookies ?? process.env.NODE_ENV === 'production';
+  const passwordRounds = options.passwordRounds ?? 12;
+  const requireAuth = createAuthMiddleware(database, options);
 
   router.post('/signup', async (request, response, next) => {
     const validation = validateCredentials(request.body, { signup: true });

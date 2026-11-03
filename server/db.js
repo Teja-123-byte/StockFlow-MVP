@@ -33,6 +33,24 @@ export function openDatabase(databasePath) {
 
     CREATE INDEX IF NOT EXISTS auth_sessions_user_id_idx ON auth_sessions(user_id);
     CREATE INDEX IF NOT EXISTS auth_sessions_expires_at_idx ON auth_sessions(expires_at);
+
+    CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 120),
+      sku TEXT NOT NULL COLLATE NOCASE CHECK (length(sku) BETWEEN 1 AND 64),
+      description TEXT NOT NULL DEFAULT '' CHECK (length(description) <= 2000),
+      quantity INTEGER NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+      cost_price REAL NOT NULL DEFAULT 0 CHECK (cost_price >= 0),
+      selling_price REAL NOT NULL DEFAULT 0 CHECK (selling_price >= 0),
+      low_stock_threshold INTEGER CHECK (low_stock_threshold IS NULL OR low_stock_threshold >= 0),
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL,
+      UNIQUE (organization_id, sku)
+    );
+
+    CREATE INDEX IF NOT EXISTS products_organization_name_idx ON products(organization_id, name COLLATE NOCASE);
+    CREATE INDEX IF NOT EXISTS products_organization_sku_idx ON products(organization_id, sku COLLATE NOCASE);
   `);
   return database;
 }

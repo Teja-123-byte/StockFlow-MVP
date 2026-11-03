@@ -36,18 +36,18 @@ export default function ProductForm({ product, defaultThreshold, onClose, onSave
       <form onSubmit={submit}>
         {error && <div className="err">{error}</div>}
         <div className="grid2">
-          <div className="f"><label>Name *</label><input value={f.name} onChange={set('name')} autoFocus /></div>
-          <div className="f"><label>SKU *</label><input value={f.sku} onChange={set('sku')} /></div>
+          <div className="f"><label htmlFor="product-name">Name *</label><input id="product-name" value={f.name} onChange={set('name')} maxLength="120" required autoFocus /></div>
+          <div className="f"><label htmlFor="product-sku">SKU *</label><input id="product-sku" value={f.sku} onChange={set('sku')} maxLength="64" required /></div>
         </div>
-        <div className="f"><label>Description</label><textarea rows="2" value={f.description} onChange={set('description')} /></div>
+        <div className="f"><label htmlFor="product-description">Description</label><textarea id="product-description" rows="2" value={f.description} onChange={set('description')} maxLength="2000" /></div>
         <div className="grid2">
-          <div className="f"><label>Quantity on hand</label><input type="number" min="0" step="1" value={f.quantity} onChange={set('quantity')} /></div>
-          <div className="f"><label>Low stock threshold</label><input type="number" min="0" step="1" value={f.lowStockThreshold} onChange={set('lowStockThreshold')} placeholder={`Default: ${defaultThreshold}`} /></div>
-          <div className="f"><label>Cost price</label><input type="number" min="0" step="0.01" value={f.costPrice} onChange={set('costPrice')} /></div>
-          <div className="f"><label>Selling price</label><input type="number" min="0" step="0.01" value={f.sellingPrice} onChange={set('sellingPrice')} /></div>
+          <div className="f"><label htmlFor="product-quantity">Quantity on hand</label><input id="product-quantity" type="number" min="0" step="1" value={f.quantity} onChange={set('quantity')} required /></div>
+          <div className="f"><label htmlFor="product-threshold">Low-stock threshold</label><input id="product-threshold" type="number" min="0" step="1" value={f.lowStockThreshold} onChange={set('lowStockThreshold')} placeholder={`Default: ${defaultThreshold}`} /></div>
+          <div className="f"><label htmlFor="product-cost">Cost price</label><input id="product-cost" type="number" min="0" step="0.01" value={f.costPrice} onChange={set('costPrice')} required /></div>
+          <div className="f"><label htmlFor="product-selling">Selling price</label><input id="product-selling" type="number" min="0" step="0.01" value={f.sellingPrice} onChange={set('sellingPrice')} required /></div>
         </div>
         <div className="foot">
-          <button type="button" onClick={onClose}>Cancel</button>
+          <button type="button" onClick={onClose} disabled={busy}>Cancel</button>
           <button className="pri" disabled={busy}>{editing ? 'Save changes' : 'Create product'}</button>
         </div>
       </form>

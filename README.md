@@ -54,10 +54,17 @@ Set `PORT` and `DATABASE_PATH` in the deployment environment. Use persistent sto
 
 Passwords are hashed with bcrypt. Session tokens are random, stored only as hashes in SQLite, and sent in HTTP-only, SameSite=Lax cookies. Production cookies require HTTPS.
 
-Run the auth integration tests with:
+Product routes require the session cookie and always scope reads and writes to the authenticated user's organization:
+
+- `GET /api/products?search=` lists products and optionally searches by name or SKU.
+- `POST /api/products` creates a product.
+- `PUT /api/products/:id` updates a product.
+- `DELETE /api/products/:id` deletes a product.
+
+SKU values are unique within each organization. Client-supplied organization IDs are ignored. Product integration tests cover CRUD, search, validation, and cross-organization access attempts.
+
+Run the integration tests with:
 
 ```powershell
 npm test
 ```
-
-Product APIs and product management are not implemented yet.

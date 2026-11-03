@@ -1,20 +1,30 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, money } from '../api.js';
 import ProductForm from '../components/ProductForm.jsx';
-import AdjustDialog from '../components/AdjustDialog.jsx';
 import ConfirmDelete from '../components/ConfirmDelete.jsx';
 
 export default function Products() {
   const [rows, setRows] = useState(null);
   const [search, setSearch] = useState('');
-  const [defaultThreshold, setDefaultThreshold] = useState(5);
+  const [defaultThreshold] = useState(5);
   const [dialog, setDialog] = useState(null); // { type: 'form' | 'adjust' | 'delete', product? }
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const requestId = useRef(0);
 
-  const load = useCallback(
-    () => api.products(search).then(setRows).catch((e) => setError(e.message)),
-    [search]
-  );
+  const load = useCallback(async (query = search) => {
+    const currentRequest = ++requestId.current;
+    setLoading(true);
+    setError('');
+    try {
+      const products = await api.products(query);
+      if (currentRequest === requestId.current) setRows(products);
+    } catch (e) {
+      if (currentRequest === requestId.current) setError(e.message);
+    } finally {
+      if (currentRequest === requestId.current) setLoading(false);
+    }
+  }, [search]);
 
   // Debounced server-side search (name or SKU)
   useEffect(() => {
@@ -22,9 +32,7 @@ export default function Products() {
     return () => clearTimeout(t);
   }, [load]);
 
-  useEffect(() => { api.settings().then((s) => setDefaultThreshold(s.defaultLowStockThreshold)); }, []);
-
-  const done = () => { setDialog(null); load(); };
+  const done = () => { setDialog(null); load(search); };
 
   return (
     <>
@@ -35,9 +43,13 @@ export default function Products() {
           <button className="pri" onClick={() => setDialog({ type: 'form' })}>Add product</button>
         </div>
       </div>
-      {error && <div className="err">{error}</div>}
+      {error && <div className="err" role="alert">{error} <button className="sm" onClick={() => load(search)}>Retry</button></div>}
       <div className="card">
-        {rows && rows.length ? (
+        {loading ? (
+          <div className="empty" role="status">Loading products...</div>
+        ) : error ? (
+          <div className="empty">Unable to load products.</div>
+        ) : rows?.length ? (
           <div className="scroll">
             <table>
               <thead>
@@ -53,7 +65,6 @@ export default function Products() {
                     <td className="num">{money(p.sellingPrice)}</td>
                     <td>
                       <div className="acts">
-                        <button className="sm" onClick={() => setDialog({ type: 'adjust', product: p })}>Adjust</button>
                         <button className="sm" onClick={() => setDialog({ type: 'form', product: p })}>Edit</button>
                         <button className="sm danger" onClick={() => setDialog({ type: 'delete', product: p })}>Delete</button>
                       </div>
@@ -64,12 +75,11 @@ export default function Products() {
             </table>
           </div>
         ) : (
-          rows && <div className="empty">{search ? 'No products match your search.' : 'No products yet.'}</div>
+          <div className="empty">{search ? 'No products match your search.' : 'No products yet. Add your first product to get started.'}</div>
         )}
       </div>
 
       {dialog?.type === 'form' && <ProductForm product={dialog.product} defaultThreshold={defaultThreshold} onClose={() => setDialog(null)} onSaved={done} />}
-      {dialog?.type === 'adjust' && <AdjustDialog product={dialog.product} onClose={() => setDialog(null)} onSaved={done} />}
       {dialog?.type === 'delete' && <ConfirmDelete product={dialog.product} onClose={() => setDialog(null)} onDeleted={done} />}
     </>
   );

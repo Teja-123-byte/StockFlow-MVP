@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createAuthRouter } from './auth.js';
+import { createProductsRouter } from './products.js';
 
 const serverDirectory = dirname(fileURLToPath(import.meta.url));
 const projectDirectory = resolve(serverDirectory, '..');
@@ -23,6 +24,7 @@ export function createApp(database, options = {}) {
   });
 
   app.use('/api/auth', createAuthRouter(database, options));
+  app.use('/api/products', createProductsRouter(database, options));
   app.use('/api', (_request, response) => {
     response.status(404).json({ error: 'API route not found' });
   });
